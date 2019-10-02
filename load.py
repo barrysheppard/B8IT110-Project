@@ -12,7 +12,7 @@
 #    name - This is the name of the deck e.g. 'Dr. "The Old" Jeffries'
 #    expansion - This is the release wave the deck was in
 #    power_level - This is calculated 'strength' of the deck based on wins
-#    chains - This is a penalty in play for being poewrful
+#    chains - This is a penalty in play for being powerful
 #    wins - The number of wins in tournaments
 #    losses - The number of losses in tournaments
 #    id - The unique reference for the deck
@@ -39,40 +39,68 @@
 ###############################################################################
 import requests
 import json
+import pandas as pd
+import numpy as np
+import time
 
 ###############################################################################
 # Functions                                                                   #
 ###############################################################################
 
 
-def load_deck(deck_number):
-    """Return details of deck from keyforgegame.com website"""
+def load_decks(start_num, num_load):
+    """Return details of decks from keyforgegame.com website"""
     # Load the deck in json format
-    website = "https://www.keyforgegame.com/api/decks/?page="
-    url = website + deck_number + "&page_size=1&links=cards"
+    website = "https://www.keyforgegame.com/api/decks/"
+    start = "?page=" + str(start_num)
+    num_decks = "&page_size=" + str(num_load)
+    end = "&links=cards"
+    url = website + start + num_decks + end
     r = requests.get(url)
     data = json.loads(r.content.decode())
+    return(data)
+
+
+def decode_decks(data):
     # Pull out the data of interest
-    deck_name = data['data'][0]['name']
-    deck_wins = data['data'][0]['wins']
-    deck_losses = data['data'][0]['losses']
-    deck_expansion = data['data'][0]['expansion']
-    card_list = extract_detail(data['_linked']['cards'], 'card_title')
-    card_house = extract_detail(data['_linked']['cards'], 'house')
-    card_type = extract_detail(data['_linked']['cards'], 'card_type')
-    card_amber = extract_detail(data['_linked']['cards'], 'amber')
-    card_power = extract_detail(data['_linked']['cards'], 'power')
-    card_armor = extract_detail(data['_linked']['cards'], 'armor')
-    return [deck_name, deck_wins, deck_losses, deck_expansion, card_list,
-            card_house, card_type, card_amber, card_power, card_armor]
+    df = pd.DataFrame(columns=['deck_id', 'deck_name', 'deck_wins',
+                               'deck_losses', 'deck_expansion', 'deck_list',
+                               'houses'])
+    decks = data['data']
+    for i in decks:
+        deck_id = i['id']
+        deck_name = i['name']
+        deck_wins = i['wins']
+        deck_losses = i['losses']
+        deck_expansion = i['expansion']
+        deck_list = i['_links']['cards']
+        deck_houses = i['_links']['houses']
+        new_deck = [deck_id, deck_name, deck_wins, deck_losses, deck_expansion,
+                    deck_list, deck_houses]
+        df = df.append(pd.Series(new_deck, index=df.columns),
+                       ignore_index=True)
+    return df
 
 
-def extract_detail(card_list, detail):
-    """Returns the list of detail from a json decklist"""
-    deck_list = []
-    for card in card_list:
-        deck_list.append(card[detail])
-    return deck_list
+def decode_cards(data):
+    # Pull out the data of interest
+    df = pd.DataFrame(columns=['card_id', 'card_title', 'card_type',
+                               'card_amber', 'card_power', 'card_armor',
+                               'card_traits'])
+    decks = data['_linked']['cards']
+    for i in decks:
+        card_id = i['id']
+        card_title = i['card_title']
+        card_type = i['card_type']
+        card_amber = i['amber']
+        card_power = i['power']
+        card_armor = i['armor']
+        card_traits = i['traits']
+        new_card = [card_id, card_title, card_type, card_amber, card_power,
+                    card_armor, card_traits]
+        df = df.append(pd.Series(new_card, index=df.columns),
+                       ignore_index=True)
+    return df
 
 
 def total_decks():
@@ -93,17 +121,7 @@ def total_decks():
 if __name__ == '__main__':
 
     # This will load the very first deck and only that deck
-    deck_number = "1"
-    deck = load_deck(deck_number)
 
-    print('Total Decks:', total_decks())
-    print('Deck Name:', deck[0])
-    print('Wins:', deck[1])
-    print('Losses:', deck[2])
-    print('Expansion:', deck[3])
-    print('Cards:', deck[4][0])
-    print('Card House:', deck[5][0])
-    print('Card Type:', deck[6][0])
-    print('Card Amber:', deck[7][0])
-    print('Card Power:', deck[8][0])
-    print('Card Armor:', deck[9][0])
+    data = load_decks(start_num=1, num_load=2)
+    print(decode_decks(data))
+    print(decode_cards(data))
