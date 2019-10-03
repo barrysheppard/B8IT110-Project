@@ -41,7 +41,6 @@ import requests
 import json
 import pandas as pd
 import numpy as np
-import time
 
 ###############################################################################
 # Functions                                                                   #
@@ -49,8 +48,7 @@ import time
 
 
 def load_decks(start_num, num_load):
-    """Return details of decks from keyforgegame.com website"""
-    # Load the deck in json format
+    """Return details of max 25 decks from keyforgegame.com website"""
     website = "https://www.keyforgegame.com/api/decks/"
     start = "?page=" + str(start_num)
     num_decks = "&page_size=" + str(num_load)
@@ -61,8 +59,18 @@ def load_decks(start_num, num_load):
     return(data)
 
 
+def load_bulk_decks(start_num, num_load):
+    """Return details of decks from keyforgegame.com website"""
+    bulk_decks = []
+    while start_num <= num_load:
+        data = load_decks(start_num, 25)
+        bulk_decks += data
+        start_num += 25
+    return bulk_decks
+
+
 def decode_decks(data):
-    # Pull out the data of interest
+    """Takes a list of decks in json format and returns decks in pd df"""
     df = pd.DataFrame(columns=['deck_id', 'deck_name', 'deck_wins',
                                'deck_losses', 'deck_expansion', 'deck_list',
                                'houses'])
@@ -83,7 +91,7 @@ def decode_decks(data):
 
 
 def decode_cards(data):
-    # Pull out the data of interest
+    """Takes a list of decks in json format and returns cards in pd df"""
     df = pd.DataFrame(columns=['card_id', 'card_title', 'card_type',
                                'card_amber', 'card_power', 'card_armor',
                                'card_traits'])
@@ -122,6 +130,5 @@ if __name__ == '__main__':
 
     # This will load the very first deck and only that deck
 
-    data = load_decks(start_num=1, num_load=2)
-    print(decode_decks(data))
-    print(decode_cards(data))
+    data = load_bulk_decks(start_num=1, num_load=100)
+    print(data)
