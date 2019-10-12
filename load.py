@@ -40,54 +40,23 @@
 import requests
 import json
 import pandas as pd
-import numpy as np
+import time
+from requests.exceptions import HTTPError
 
 ###############################################################################
 # Functions                                                                   #
 ###############################################################################
 
 
-def load_decks(start_num, num_load):
-    """Return details of max 25 decks from keyforgegame.com website"""
-    website = "https://www.keyforgegame.com/api/decks/"
-    start = "?page=" + str(start_num)
-    num_decks = "&page_size=" + str(num_load)
-    end = "&links=cards"
-    url = website + start + num_decks + end
-    r = requests.get(url)
-    data = json.loads(r.content.decode())
-    return(data)
-
-
-def load_bulk_decks(start_num, num_load):
-    """Return details of decks from keyforgegame.com website"""
-    bulk_decks = []
-    while start_num <= num_load:
-        data = load_decks(start_num, 25)
-        bulk_decks += data
-        start_num += 25
-    return bulk_decks
-
-
-def decode_decks(data):
-    """Takes a list of decks in json format and returns decks in pd df"""
-    df = pd.DataFrame(columns=['deck_id', 'deck_name', 'deck_wins',
-                               'deck_losses', 'deck_expansion', 'deck_list',
-                               'houses'])
-    decks = data['data']
-    for i in decks:
-        deck_id = i['id']
-        deck_name = i['name']
-        deck_wins = i['wins']
-        deck_losses = i['losses']
-        deck_expansion = i['expansion']
-        deck_list = i['_links']['cards']
-        deck_houses = i['_links']['houses']
-        new_deck = [deck_id, deck_name, deck_wins, deck_losses, deck_expansion,
-                    deck_list, deck_houses]
-        df = df.append(pd.Series(new_deck, index=df.columns),
-                       ignore_index=True)
-    return df
+def create_blank_csv():
+    df_deck = pd.DataFrame(columns=['deck_id', 'deck_name', 'deck_wins',
+                                    'deck_losses', 'deck_expansion',
+                                    'deck_list', 'houses'])
+    df_deck.to_csv('decks.csv', header=True)
+    df_card = pd.DataFrame(columns=['card_id', 'card_title', 'card_type',
+                                    'card_amber', 'card_power', 'card_armor',
+                                    'card_traits'])
+    df_card.to_csv('cards.csv', header=True)
 
 
 def decode_cards(data):
@@ -111,6 +80,71 @@ def decode_cards(data):
     return df
 
 
+def decode_decks(data):
+    """Takes a list of decks in json format and returns decks in pd df"""
+    df = pd.DataFrame(columns=['deck_id', 'deck_name', 'deck_wins',
+                               'deck_losses', 'deck_expansion', 'deck_list',
+                               'houses'])
+    decks = data['data']
+    for i in decks:
+        deck_id = i['id']
+        deck_name = i['name']
+        deck_wins = i['wins']
+        deck_losses = i['losses']
+        deck_expansion = i['expansion']
+        deck_list = i['_links']['cards']
+        deck_houses = i['_links']['houses']
+        new_deck = [deck_id, deck_name, deck_wins, deck_losses, deck_expansion,
+                    deck_list, deck_houses]
+        df = df.append(pd.Series(new_deck, index=df.columns),
+                       ignore_index=True)
+    return df
+
+
+def load_bulk_decks(start_num, end_num):
+    """Save decks and cards from .csv files"""
+    while start_num <= end_num:
+        data = load_decks(start_num, 25)
+        new_decks = decode_decks(data)
+        new_decks.to_csv('decks.csv', mode='a', header=False)
+        new_cards = decode_cards(data)
+        new_cards.to_csv('cards.csv', mode='a', header=False)
+        # each page has 25 decks, we increment by pages not decks
+        print("Added page: " + str(start_num))
+        start_num += 1
+        # As the website has a 429 'too many requests' response if it
+        # gets overwhelmed, we're adding a 30 sec break after every 5
+        # pages
+        if ((start_num-1) % 5) == 0:
+            print("Sleeping")
+            time.sleep(60)
+    print("Finished")
+
+
+def load_decks(start_num, num_load):
+    """Return details of max 25 decks from keyforgegame.com website"""
+    website = "https://www.keyforgegame.com/api/decks/"
+    start = "?page=" + str(start_num)
+    num_decks = "&page_size=" + str(num_load)
+    end = "&links=cards"
+    url = website + start + num_decks + end
+    try:
+        r = requests.get(url, headers={'User-agent': 'Keyforge Bot 0.1'})
+        # If the response was successful, no Exception will be raised
+        r.raise_for_status()
+    except HTTPError as http_err:
+        print(f'HTTP error occurred: {http_err}')
+        # We're expecting 429 (too many requests) errors
+        print("Waiting for 30 minutes")
+        time.sleep(10800)  # Delay for 30 minutes, then try again
+        r = requests.get(url, headers={'User-agent': 'Keyforge Bot 0.1'})
+    except Exception as err:
+        print(f'Other error occurred: {err}')
+    else:
+        data = json.loads(r.content.decode())
+    return(data)
+
+
 def total_decks():
     """Returns the total number of decks registered on keyforgegame.com"""
     # We load the details of deck number 1
@@ -128,7 +162,5 @@ def total_decks():
 
 if __name__ == '__main__':
 
-    # This will load the very first deck and only that deck
-
-    data = load_bulk_decks(start_num=1, num_load=100)
-    print(data)
+    create_blank_csv()
+    load_bulk_decks(start_num=16500, end_num=20000)
