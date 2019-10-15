@@ -48,15 +48,20 @@ from requests.exceptions import HTTPError
 ###############################################################################
 
 
-def create_blank_csv():
+def create_blank_csv(start_num, end_num):
+    ''' Creates deck.csv and cards.csv with required headers and suffix'''
+    # creates file for decks
+    deck_file_name = "deck_" + str(start_num) + "_" + str(end_num) + ".csv"
     df_deck = pd.DataFrame(columns=['deck_id', 'deck_name', 'deck_wins',
                                     'deck_losses', 'deck_expansion',
                                     'deck_list', 'houses'])
-    df_deck.to_csv('decks.csv', header=True)
+    df_deck.to_csv(deck_file_name, header=True)
+    # creates file for cards
+    card_file_name = "card_" + str(start_num) + "_" + str(end_num) + ".csv"
     df_card = pd.DataFrame(columns=['card_id', 'card_title', 'card_type',
                                     'card_amber', 'card_power', 'card_armor',
                                     'card_traits'])
-    df_card.to_csv('cards.csv', header=True)
+    df_card.to_csv(card_file_name, header=True)
 
 
 def decode_cards(data):
@@ -135,8 +140,8 @@ def load_decks(start_num, num_load):
     except HTTPError as http_err:
         print(f'HTTP error occurred: {http_err}')
         # We're expecting 429 (too many requests) errors
-        print("Waiting for 30 minutes")
-        time.sleep(10800)  # Delay for 30 minutes, then try again
+        print("Waiting for 60 minutes")
+        time.sleep(3600)  # Delay for 60 minutes, then try again
         r = requests.get(url, headers={'User-agent': 'Keyforge Bot 0.1'})
     except Exception as err:
         print(f'Other error occurred: {err}')
@@ -162,5 +167,8 @@ def total_decks():
 
 if __name__ == '__main__':
 
-    create_blank_csv()
-    load_bulk_decks(start_num=16500, end_num=20000)
+    start_num = 27001
+    end_num = 29000
+
+    create_blank_csv(start_num, end_num)
+    load_bulk_decks(start_num, end_num)
