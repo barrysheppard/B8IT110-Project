@@ -5,8 +5,8 @@
 # Task: Prep data of keyforge decks                                           #
 ###############################################################################
 
-# csv files are saved in the data/ folder. These will be cards or decks
-# starting with cards_ or decks_ then having the starting page number _ and
+# csv files are saved in the data/decks and data/cards folders. These will
+# start with cards_ or decks_ then having the starting page number _ and
 # the ending page number.
 # Each deck page has 25 decks, each card page has details of each card from
 # 25 decks. That number will vary as decks can have multiple copies of the same
