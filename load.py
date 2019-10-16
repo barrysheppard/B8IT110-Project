@@ -108,12 +108,14 @@ def decode_decks(data):
 
 def load_bulk_decks(start_num, end_num):
     """Save decks and cards from .csv files"""
+    deck_file_name = "deck_" + str(start_num) + "_" + str(end_num) + ".csv"
+    card_file_name = "card_" + str(start_num) + "_" + str(end_num) + ".csv"
     while start_num <= end_num:
         data = load_decks(start_num, 25)
         new_decks = decode_decks(data)
-        new_decks.to_csv('decks.csv', mode='a', header=False)
+        new_decks.to_csv(deck_file_name, mode='a', header=False)
         new_cards = decode_cards(data)
-        new_cards.to_csv('cards.csv', mode='a', header=False)
+        new_cards.to_csv(card_file_name, mode='a', header=False)
         # each page has 25 decks, we increment by pages not decks
         print("Added page: " + str(start_num))
         start_num += 1
@@ -167,8 +169,8 @@ def total_decks():
 
 if __name__ == '__main__':
 
-    start_num = 27001
-    end_num = 29000
+    start_num = 31001
+    end_num = 33000
 
     create_blank_csv(start_num, end_num)
     load_bulk_decks(start_num, end_num)
