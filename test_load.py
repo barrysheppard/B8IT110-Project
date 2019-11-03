@@ -40,7 +40,7 @@ class TestLoad(unittest.TestCase):
     def test_decode_decks(self):
         decks = load_decks(1, 1)
         decks_df = decode_decks(decks)
-        #self.assertIsInstance(pd.DataFrame, type(decks_df))
+        # self.assertIsInstance(pd.DataFrame, type(decks_df))
         # Need more checks here
         True
 

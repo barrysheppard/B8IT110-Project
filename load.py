@@ -169,8 +169,8 @@ def total_decks():
 
 if __name__ == '__main__':
 
-    start_num = 31001
-    end_num = 33000
+    start_num = 49476
+    end_num = 52000
 
     create_blank_csv(start_num, end_num)
     load_bulk_decks(start_num, end_num)

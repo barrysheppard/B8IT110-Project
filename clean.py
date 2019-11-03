@@ -58,10 +58,10 @@ def create_deck_df():
     # remove the blank first column
     deck_df.dropna(how='all', axis='columns', inplace=True)
     # the format for some is in text but we need to change it to an array
-    deck_df['deck_list'] = \
-        deck_df['deck_list'].apply(lambda x: np.array(ast.literal_eval(x)))
-    deck_df['deck_houses'] = \
-        deck_df['deck_houses'].apply(lambda x: np.array(ast.literal_eval(x)))
+    #deck_df['deck_list'] = \
+    #    deck_df['deck_list'].apply(lambda x: np.array(ast.literal_eval(x)))
+    # deck_df['deck_houses'] = \
+    #    deck_df['deck_houses'].apply(lambda x: np.array(ast.literal_eval(x)))
     return(deck_df)
 
 
