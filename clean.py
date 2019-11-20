@@ -19,8 +19,6 @@
 # Import                                                                      #
 ###############################################################################
 import pandas as pd
-import numpy as np
-import ast
 import os
 
 ###############################################################################
@@ -39,10 +37,6 @@ def create_card_df():
     card_df = pd.concat(list_of_cards)
     # remove the blank first column
     card_df.dropna(how='all', axis='columns', inplace=True)
-    # remove the duplicates based on card id, this is because in rare cases
-    # cards can appear in a different house 'color' and will have a different
-    # card_id.
-    card_df.drop_duplicates(subset='card_id', keep='first', inplace=True)
     return(card_df)
 
 
@@ -57,11 +51,6 @@ def create_deck_df():
     deck_df = pd.concat(list_of_decks)
     # remove the blank first column
     deck_df.dropna(how='all', axis='columns', inplace=True)
-    # the format for some is in text but we need to change it to an array
-    #deck_df['deck_list'] = \
-    #    deck_df['deck_list'].apply(lambda x: np.array(ast.literal_eval(x)))
-    # deck_df['deck_houses'] = \
-    #    deck_df['deck_houses'].apply(lambda x: np.array(ast.literal_eval(x)))
     return(deck_df)
 
 
@@ -71,15 +60,5 @@ def create_deck_df():
 
 
 if __name__ == '__main__':
-    '''
-    deck_df = create_deck_df()
-    print(deck_df.iloc[0])
-    print("Total decks:" + str(len(deck_df)))
-    print("Decks with wins:" +
-          str(len(deck_df.loc[(deck_df['deck_wins'] > 0)])))
 
-    card_df = create_card_df()
-    print(card_df.iloc[0])
-    print("Total cards:" + str(len(card_df)))
-    print(card_df.loc[(card_df['card_title'] == 'Grasping Vines')])
-    '''
+    print("This file should not be run from terminal")
