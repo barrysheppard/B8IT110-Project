@@ -106,6 +106,26 @@ def decode_decks(data):
     return df
 
 
+def decode_single_deck(data):
+    """Takes a decks in json format and returns decks in pd df"""
+    df = pd.DataFrame(columns=['deck_id', 'deck_name', 'deck_wins',
+                               'deck_losses', 'deck_expansion', 'deck_list',
+                               'houses'])
+    decks = data['data']
+    deck_id = decks['id']
+    deck_name = decks['name']
+    deck_wins = decks['wins']
+    deck_losses = decks['losses']
+    deck_expansion = decks['expansion']
+    deck_list = decks['cards']
+    deck_houses = decks['_links']['houses']
+    new_deck = [deck_id, deck_name, deck_wins, deck_losses, deck_expansion,
+                deck_list, deck_houses]
+    df = df.append(pd.Series(new_deck, index=df.columns),
+                   ignore_index=True)
+    return df
+
+
 def load_bulk_decks(start_num, end_num):
     """Save decks and cards from .csv files"""
     deck_file_name = "deck_" + str(start_num) + "_" + str(end_num) + ".csv"
@@ -135,6 +155,27 @@ def load_decks(start_num, num_load):
     num_decks = "&page_size=" + str(num_load)
     end = "&links=cards"
     url = website + start + num_decks + end
+    try:
+        r = requests.get(url, headers={'User-agent': 'Keyforge Bot 0.1'})
+        # If the response was successful, no Exception will be raised
+        r.raise_for_status()
+    except HTTPError as http_err:
+        print(f'HTTP error occurred: {http_err}')
+        # We're expecting 429 (too many requests) errors
+        print("Waiting for 60 minutes")
+        time.sleep(3600)  # Delay for 60 minutes, then try again
+        r = requests.get(url, headers={'User-agent': 'Keyforge Bot 0.1'})
+    except Exception as err:
+        print(f'Other error occurred: {err}')
+    else:
+        data = json.loads(r.content.decode())
+    return(data)
+
+
+def load_single_deck(deck_code):
+    """Return details of a specific keyforgegame.com website"""
+    website = "https://www.keyforgegame.com/api/decks/"
+    url = website + deck_code
     try:
         r = requests.get(url, headers={'User-agent': 'Keyforge Bot 0.1'})
         # If the response was successful, no Exception will be raised
