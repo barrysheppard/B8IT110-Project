@@ -55,13 +55,13 @@ def create_blank_csv(start_num, end_num):
     df_deck = pd.DataFrame(columns=['deck_id', 'deck_name', 'deck_wins',
                                     'deck_losses', 'deck_expansion',
                                     'deck_list', 'houses'])
-    df_deck.to_csv(deck_file_name, header=True)
+    df_deck.to_csv(deck_file_name, header=True, index=False)
     # creates file for cards
     card_file_name = "card_" + str(start_num) + "_" + str(end_num) + ".csv"
     df_card = pd.DataFrame(columns=['card_id', 'card_title', 'card_type',
                                     'card_amber', 'card_power', 'card_armor',
                                     'card_traits'])
-    df_card.to_csv(card_file_name, header=True)
+    df_card.to_csv(card_file_name, header=True, index=False)
 
 
 def decode_cards(data):
