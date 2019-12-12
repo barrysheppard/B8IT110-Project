@@ -130,8 +130,8 @@ def prepare_deck(deck_df):
     # AoA = Age of Ascension which was set number 2
     deck_df.loc[deck_df.deck_expansion == 435, 'expansion_coa'] = True
     deck_df.loc[deck_df.deck_expansion == 341, 'expansion_coa'] = False
-    deck_df.loc[deck_df.deck_expansion == 435, 'expansion_aoa'] = True
-    deck_df.loc[deck_df.deck_expansion == 341, 'expansion_aoa'] = False
+    deck_df.loc[deck_df.deck_expansion == 341, 'expansion_aoa'] = True
+    deck_df.loc[deck_df.deck_expansion == 435, 'expansion_aoa'] = False
     return deck_df
 
 
